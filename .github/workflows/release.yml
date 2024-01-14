@@ -4,8 +4,6 @@ on:
     branches: [ "main" ]
   schedule:
     - cron: '0 0 * * *'
-env:
-  GH_TOKEN: ${{ github.token }}
 jobs:
   build:
     runs-on: windows-latest
@@ -16,6 +14,8 @@ jobs:
         fetch-depth: 0
     - name: Github Release
       uses: elgohr/Github-Release-Action@v5
+      env:
+        GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
       with:
         title: Test
         workdir: .
