@@ -32,8 +32,8 @@ jobs:
             generate_release_notes = $false
         } | ConvertTo-Json
         $response = Invoke-RestMethod -Uri $apiUrl -Method Post -Headers $headers -Body $body
-        $responseObject = $response | ConvertFrom-Json
-        $releaseId = $responseObject.id
+        Write-Host $response
+        $releaseId = $response.id
 
         # Create GitHub release asset
         $apiUrl = "https://uploads.github.com/repos/jfevia/Power-Automate-Desktop/releases/$releaseId/assets?name=Setup.Microsoft.PowerAutomate.exe"
