@@ -13,8 +13,24 @@ jobs:
       with:
         fetch-depth: 0
     - name: Github Release
-      uses: elgohr/Github-Release-Action@v5
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        title: Test
+      run: |
+        $token = "${{ secrets.GITHUB_TOKEN }}"
+        $apiUrl = "https://api.github.com/repos/jefernn/Power-Automate-Desktop/releases"
+        $headers = @{
+            "Accept" = "application/vnd.github+json"
+            "Authorization" = "Bearer $token"
+            "X-GitHub-Api-Version" = "2022-11-28"
+        }
+        
+        $body = @{
+            tag_name = "v1.0.0"
+            target_commitish = "master"
+            name = "v1.0.0"
+            body = "Description of the release"
+            draft = $false
+            prerelease = $false
+            generate_release_notes = $false
+        } | ConvertTo-Json
+        
+        Invoke-RestMethod -Uri $apiUrl -Method Post -Headers $headers -Body $body
+
