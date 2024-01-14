@@ -7,6 +7,9 @@ on:
   schedule:
     - cron: '0 0 * * *'
 
+env:
+  GH_TOKEN: ${{ github.token }}
+
 jobs:
   build:
     runs-on: windows-latest
