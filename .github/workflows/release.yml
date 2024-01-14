@@ -24,7 +24,7 @@ jobs:
         
         $body = @{
             tag_name = "v1.0.0"
-            target_commitish = "master"
+            target_commitish = "main"
             name = "v1.0.0"
             body = "Description of the release"
             draft = $true
