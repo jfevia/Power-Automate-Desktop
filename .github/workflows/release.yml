@@ -15,7 +15,7 @@ jobs:
     - name: Github Release
       run: |
         $token = "${{ secrets.GITHUB_TOKEN }}"
-        $apiUrl = "https://api.github.com/repos/jefernn/Power-Automate-Desktop/releases"
+        $apiUrl = "https://api.github.com/repos/jfevia/Power-Automate-Desktop/releases"
         $headers = @{
             "Accept" = "application/vnd.github+json"
             "Authorization" = "Bearer $token"
@@ -27,7 +27,7 @@ jobs:
             target_commitish = "master"
             name = "v1.0.0"
             body = "Description of the release"
-            draft = $false
+            draft = $true
             prerelease = $false
             generate_release_notes = $false
         } | ConvertTo-Json
