@@ -24,8 +24,15 @@ jobs:
             "Authorization" = "Bearer $token"
             "X-GitHub-Api-Version" = "2022-11-28"
         }
+        $tag = "v$version"
+        try {
+            $response = Invoke-RestMethod -Uri 'https://api.github.com/repos/jfevia/Power-Automate-Desktop/releases/tags/$tag'
+            return
+        } catch {
+            Write-Host "Could not find release with tag '$tag', creating release..."
+        }
         $body = @{
-            tag_name = "v$version"
+            tag_name = "$tag"
             target_commitish = "main"
             name = "$version"
             body = ""
