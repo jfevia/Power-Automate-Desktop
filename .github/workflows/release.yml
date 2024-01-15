@@ -12,7 +12,9 @@ jobs:
     - name: Release
       run: |
         # Download Power Automate for desktop
-        Invoke-WebRequest -Uri https://go.microsoft.com/fwlink/?linkid=2164365 -OutFile Setup.Microsoft.PowerAutomate.exe
+        $fileName = "Setup.Microsoft.PowerAutomate.exe"
+        Invoke-WebRequest -Uri https://go.microsoft.com/fwlink/?linkid=2164365 -OutFile $fileName
+        $version = $((Get-Item $fileName).VersionInfo.ProductVersion)
 
         # Create GitHub release
         $token = "${{ secrets.GITHUB_TOKEN }}"
@@ -23,24 +25,23 @@ jobs:
             "X-GitHub-Api-Version" = "2022-11-28"
         }
         $body = @{
-            tag_name = "v1.0.0"
+            tag_name = "v$version"
             target_commitish = "main"
-            name = "v1.0.0"
-            body = "Description of the release"
+            name = "$version"
+            body = ""
             draft = $true
             prerelease = $false
             generate_release_notes = $false
         } | ConvertTo-Json
         $response = Invoke-RestMethod -Uri $apiUrl -Method Post -Headers $headers -Body $body
-        Write-Host $response
         $releaseId = $response.id
 
         # Create GitHub release asset
-        $apiUrl = "https://uploads.github.com/repos/jfevia/Power-Automate-Desktop/releases/$releaseId/assets?name=Setup.Microsoft.PowerAutomate.exe"
+        $apiUrl = "https://uploads.github.com/repos/jfevia/Power-Automate-Desktop/releases/$releaseId/assets?name=$fileName"
         $headers = @{
             "Accept" = "application/vnd.github+json"
             "Authorization" = "Bearer $token"
             "X-GitHub-Api-Version" = "2022-11-28"
             "Content-Type" = "application/octet-stream"
         }
-        Invoke-RestMethod -Uri $apiUrl -Method Post -Headers $headers -InFile "Setup.Microsoft.PowerAutomate.exe"
+        Invoke-RestMethod -Uri $apiUrl -Method Post -Headers $headers -InFile "$fileName"
