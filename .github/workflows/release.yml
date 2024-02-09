@@ -13,7 +13,7 @@ jobs:
       run: |
         # Download Power Automate for desktop
         $fileName = "Setup.Microsoft.PowerAutomate.exe"
-        Invoke-WebRequest -Uri https://go.microsoft.com/fwlink/?linkid=2164365 -OutFile $fileName
+        Invoke-WebRequest -Uri https://go.microsoft.com/fwlink/?linkid=2102613 -OutFile $fileName
         $version = $((Get-Item $fileName).VersionInfo.ProductVersion)
 
         # Create GitHub release
