@@ -4,9 +4,10 @@ on:
     branches: [ "main" ]
   schedule:
     - cron: '0 0 * * *'
+  workflow_dispatch:
 jobs:
   check:
-    if: github.event_name == 'schedule'
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     outputs:
       changed: ${{ steps.compare.outputs.changed }}

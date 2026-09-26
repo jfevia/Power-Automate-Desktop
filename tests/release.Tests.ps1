@@ -67,8 +67,9 @@ function Test-Build {
 }
 
 Describe 'Release workflow' {
-    It 'only runs the release on schedule when the installer changes' {
-        $workflow.jobs.check.if | Should Be "github.event_name == 'schedule'"
+    It 'runs releases only on schedule or manual dispatch when the installer changes' {
+        ($workflow.on.Keys -contains 'workflow_dispatch') | Should Be $true
+        $workflow.jobs.check.if | Should Be "github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'"
         $workflow.jobs.build.needs | Should Be 'check'
         $workflow.jobs.build.if | Should Be "needs.check.outputs.changed == 'true'"
     }
