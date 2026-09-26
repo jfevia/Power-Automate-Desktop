@@ -1,11 +1,45 @@
-name: Power-Automate-Desktop-Release
+﻿name: Power-Automate-Desktop-Release
 on:
   pull_request:
     branches: [ "main" ]
   schedule:
     - cron: '0 0 * * *'
 jobs:
+  check:
+    if: github.event_name == 'schedule'
+    runs-on: ubuntu-latest
+    outputs:
+      changed: ${{ steps.compare.outputs.changed }}
+    steps:
+    - name: Compare installer with latest release
+      id: compare
+      shell: pwsh
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        $fileName = "Setup.Microsoft.PowerAutomate.exe"
+        Invoke-WebRequest -Uri https://go.microsoft.com/fwlink/?linkid=2102613 -OutFile $fileName
+        $hash = (Get-FileHash $fileName -Algorithm SHA256).Hash.ToLowerInvariant()
+        $headers = @{
+            "Accept" = "application/vnd.github+json"
+            "Authorization" = "Bearer $env:GITHUB_TOKEN"
+            "X-GitHub-Api-Version" = "2022-11-28"
+        }
+        $response = Invoke-WebRequest -Uri "https://api.github.com/repos/jfevia/Power-Automate-Desktop/releases/latest" -Headers $headers -SkipHttpErrorCheck
+        if ($response.StatusCode -eq 200) {
+            $asset = ($response.Content | ConvertFrom-Json).assets | Where-Object { $_.name -eq $fileName } | Select-Object -First 1
+            if ($asset.digest -eq "sha256:$hash") {
+                Write-Host "Installer matches the latest release; skipping."
+                return
+            }
+        } elseif ($response.StatusCode -ne 404) {
+            throw "Unable to check latest release (HTTP $([int]$response.StatusCode))."
+        }
+        Write-Host "No matching release asset digest; checking the installer version."
+        "changed=true" >> $env:GITHUB_OUTPUT
   build:
+    needs: check
+    if: needs.check.outputs.changed == 'true'
     runs-on: windows-latest
     steps:
 
@@ -25,6 +59,14 @@ jobs:
             "X-GitHub-Api-Version" = "2022-11-28"
         }
         $tag = "v$version"
+        $existingRelease = Invoke-WebRequest -Uri "$apiUrl/tags/$tag" -Method Head -Headers $headers -SkipHttpErrorCheck
+        if ($existingRelease.StatusCode -eq 200) {
+            Write-Host "Release $tag already exists; skipping."
+            return
+        }
+        if ($existingRelease.StatusCode -ne 404) {
+            throw "Unable to check release $tag (HTTP $([int]$existingRelease.StatusCode))."
+        }
         $body = @{
             tag_name = "$tag"
             target_commitish = "main"
